@@ -30,3 +30,16 @@ console.log("Length (12): "+ test.length())
 //additional pop
 test.set('moon', 'silver')
 console.log("Length (13): "+ test.length())
+
+//additional pop
+test.set('earth', 'blue')
+console.log("Length (14): "+ test.length())
+
+//test remove 
+test.remove('earth', 'blue')
+console.log("Length (13): "+ test.length())
+console.log(test.entries());
+console.log(test.keys());
+console.log(test.values());
+console.log(test.has('grape'));
+console.log(test.has('ape'));

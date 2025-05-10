@@ -15,7 +15,8 @@ export class HashMap {
     constructor(loadFactor=0.75,capacity=16){
         this.loadFactor=loadFactor;
         this.capacity=capacity;
-        this.buckets = [];
+        this.buckets = Array(this.capacity).fill(null).map(() => []);
+        this.size=0;
     }
 
     /*
@@ -53,22 +54,23 @@ export class HashMap {
     */
     set(key, value){
         const hashKey = this.hash(key);
-        console.log(`key ${key} is hashed ${hashKey}`)
-        //insure bucket capacity remains sufficient.
         this.increaseCapacity();
 
-        if(this.has(key)){
-            //Update value
-            this.buckets[hashKey]=(new Content(key, value));
-            //log update of key
-            console.log(`Updated key ${key} with value ${value} at index ${hashKey}`)
+        if(this.buckets[hashKey] === null || this.buckets[hashKey] === undefined){
+            this.buckets[hashKey] = [];
         }
-        else{
-            //Add new content to hashmap
-            this.buckets[hashKey]=(new Content(key, value));
-            //log insert of key
-            console.log(`Added key ${key} with value ${value} at index ${hashKey}`)
+
+        for (const content of this.buckets[hashKey]) {
+            if (content.key === key) {
+                content.value = value;
+                console.log(`Updated key ${key} with value ${value} at index ${hashKey}`);
+                return;
+            }
         }
+
+        this.buckets[hashKey].push(new Content(key, value));
+        this.size++;
+        console.log(`Added key ${key} with value ${value} at index ${hashKey}`);
     }
 
     /*
@@ -88,22 +90,31 @@ export class HashMap {
             return false;
         }
         else{
-            return true;
+            for (const content of this.buckets[hashKey]) {
+                if (content.key === key) {
+                    return true;
+                }
+            }
+            return false;
         }
+        
     }
 
     /*
     * Should remove the entry with that key and return true.
     */
     remove(key){
-        const hashKey= this.hash(key);
-        if(this.has(key)){
-            this.buckets[hashKey]=null;
+        const hashKey = this.hash(key);
+        const bucket = this.buckets[hashKey];
+        if (!bucket) return false;
+    
+        const index = bucket.findIndex(content => content.key === key);
+        if (index !== -1) {
+            bucket.splice(index, 1);
+            this.size--;
             return true;
         }
-        else{
-            return false;
-        }
+        return false;
     }
 
     /*
@@ -118,22 +129,15 @@ export class HashMap {
     * returns the number of stored keys in the hash map
     */
     length(){
-        let currLength=0;
-        for(let i=0;i<=this.buckets.length;i++){
-            if(this.buckets[i]===null || this.buckets[i]===undefined){
-            }
-            else{
-                currLength +=1;
-            }
-        }
-        return currLength;
+        return this.size;
     }
 
     /*
     * removes all entries in the hash map
     */
     clear(){
-        this.buckets=[];
+        this.buckets = Array(this.capacity).fill(null).map(() => []);
+        this.size=0;
     }
 
     /*
@@ -142,7 +146,9 @@ export class HashMap {
     keys(){
         let keyArray=[];
         for(const bucket of this.buckets){
-            keyArray.push(bucket.key);
+            for (let content of bucket) {
+                keyArray.push(content.key);
+                } 
         }
         return keyArray;
     }
@@ -153,7 +159,9 @@ export class HashMap {
     values(){
         let valueArray=[];
         for(const bucket of this.buckets){
-            valueArray.push(bucket.value);
+            for (let content of bucket) {
+                valueArray.push(content.value);
+                } 
         }
         return valueArray;
     }
@@ -163,8 +171,10 @@ export class HashMap {
     */
     entries(){
         let entrieArray=[];
-        for(const bucket of this.buckets){
-            entrieArray.push(bucket);
+        for(let bucket of this.buckets){
+            for (let content of bucket) {
+                entrieArray.push(content);
+                }
         }
         return entrieArray;
     }
